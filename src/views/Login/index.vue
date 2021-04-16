@@ -6,29 +6,33 @@
 
     <!-- app登录 -->
     <div class="loginBtn-box">
-      <div class="phoneLogin">手机号登录</div>
+      <div class="phoneLogin" @click="login">手机号登录</div>
       <div class="appLogin">
-        <a href="javascript:;">
+        <a href="javascript:;"  @click="login">
           <img src="@/assets/icon/loginWeChat-icon.png" alt="">
         </a>
-        <a href="javascript:;">
+        <a href="javascript:;" @click="login">
           <img src="@/assets/icon/loginQQ-icon.png" alt="">
         </a>
-        <a href="javascript:;">
+        <a href="javascript:;" @click="login">
           <img src="@/assets/icon/login-micro-blog-icon.png" alt="">
         </a>
-        <a href="javascript:;">
+        <a href="javascript:;" @click="login">
           <img src="@/assets/icon/login-netease-cloud-icon.png" alt="">
         </a>
       </div>
 
       <!-- 协议 -->
-      <div class="agreement">
-        <span class="go"><input type="checkbox">同意</span>
+      <div class="agreement animated" :class="{shake: beforLogin}">
+        <span class="go"><input type="checkbox" v-model="agreementStatus">同意</span>
         <p>《用户协议》</p>
-        <p>《隐私协议》</p>
-        <p>《儿童隐私协议》</p>
+        <p>《隐私政策》</p>
+        <p>《儿童隐私政策》</p>
       </div>
+    </div>
+
+    <div class="show" v-if="beforLogin">
+      请先勾选同意 《用户协议》 《隐私政策》 《儿童隐私政策》
     </div>
   </div>
 </template>
@@ -37,6 +41,37 @@
 
 export default {
   name: 'Login',
+  data () {
+    return {
+      // 协议勾选状态的数据
+      agreementStatus: false,
+
+      // 登录是否显示提示勾选数据
+      beforLogin: false
+    }
+  },
+
+  methods: {
+    // 登录操作fn
+    login () {
+      // 判断是否勾选协议
+      if (!this.agreementStatus) {
+        // 清除定时器
+        clearTimeout(this.loginShow)
+
+        // 没有勾选则显示提示
+        this.beforLogin = true
+
+        // 设置定时器做提示隐藏
+        this.loginShow = setTimeout(() => {
+          this.beforLogin = false
+        },2000)
+
+        return
+      }
+
+    }
+  }
 }
 </script>
 
@@ -85,6 +120,7 @@ export default {
       display: flex;
       justify-content: space-around;
       align-items: center;
+      transform: scale(.9);
       p {
         font-size: 12px;
         color: #fff;
@@ -95,6 +131,19 @@ export default {
         line-height: 20px;
       }
     }
+  }
+  .show {
+    width: 270px;
+    height: auto;
+    padding: 20px;
+    font-size: 16px;
+    background-color: #fff;
+    border-radius: 20px;
+    position: absolute;
+    bottom: 150px;
+    left: 50%;
+    margin-left: -135px;
+    box-sizing: border-box;
   }
 }
 input[type=checkbox]{

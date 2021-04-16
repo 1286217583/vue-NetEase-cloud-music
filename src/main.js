@@ -5,6 +5,9 @@ import router from './router'
 // vue-lazyload 图片懒加载
 import VueLazyload from 'vue-lazyload'
 
+import 'vant/lib/button/style';
+
+
 Vue.use(VueLazyload, {
   preLoad: 1.3,
   error: '/damage-img.png',
