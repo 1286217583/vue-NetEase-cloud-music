@@ -10,6 +10,12 @@ const routes = [
     component: () => import('@/views/Login') 
   },
 
+  // 手机登录页
+  {
+    path:'/phoneLogin',
+    component: () => import('@/views/PhoneLogin')
+  },
+
   // 首页路由
   {
     path: '/home',
@@ -53,6 +59,18 @@ const routes = [
         redirect: 'find'
       }
     ]
+  },
+
+  // 搜索页路由
+  {
+    path: '/searchPage',
+    component: () => import('@/views/SearchPage')
+  },
+
+  // 私人FM路由
+  {
+    path: '/privateFM',
+    component: () => import('../views/PrivateFM')
   },
 
   // 进入跳转到首页

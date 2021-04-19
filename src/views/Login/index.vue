@@ -6,18 +6,18 @@
 
     <!-- app登录 -->
     <div class="loginBtn-box">
-      <div class="phoneLogin" @click="login">手机号登录</div>
+      <div to="/phoneLogin" class="phoneLogin" @click="login">手机号登录</div>
       <div class="appLogin">
-        <a href="javascript:;"  @click="login">
+        <a href="javascript:;">
           <img src="@/assets/icon/loginWeChat-icon.png" alt="">
         </a>
-        <a href="javascript:;" @click="login">
+        <a href="javascript:;">
           <img src="@/assets/icon/loginQQ-icon.png" alt="">
         </a>
-        <a href="javascript:;" @click="login">
+        <a href="javascript:;">
           <img src="@/assets/icon/login-micro-blog-icon.png" alt="">
         </a>
-        <a href="javascript:;" @click="login">
+        <a href="javascript:;">
           <img src="@/assets/icon/login-netease-cloud-icon.png" alt="">
         </a>
       </div>
@@ -70,6 +70,8 @@ export default {
         return
       }
 
+      // 跳转到手机登录界面
+      this.$router.push('/phoneLogin')
     }
   }
 }

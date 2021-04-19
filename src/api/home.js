@@ -2,7 +2,7 @@
 // 返回一个接口调用之后，axios返回的一个 promise 对象
 
 // 引入 axios
-import request from '@/util/request'
+import request from '@/utils/request'
 
 /**
  * 获取轮播图数据
@@ -55,5 +55,47 @@ export const getRecommendedSongList = () => {
   return request({
     url: '/api/video/category/list',
     method: 'GET',
+  })
+}
+
+/**
+ * 获取 搜索结果
+ * @param {String} keywords 搜索关键字 
+ */
+ export const getSearchResult = (val) => {
+  return request({
+    url: '/api/search',
+    method: 'GET',
+    params: {
+      keywords:val
+    }
+  })
+}
+
+/**
+ * 获取 歌词
+ * @param {String} keywords 搜索关键字 
+ */
+ export const getLyric = (id) => {
+  return request({
+    url: '/api/lyric',
+    method: 'GET',
+    params: {
+      id
+    }
+  })
+}
+
+/**
+ * 获取 音乐url
+ * @param {String} id 音乐id 
+ */
+ export const getMusicUrl = (id) => {
+  return request({
+    url: '/api/song/url',
+    method: 'GET',
+    params: {
+      id
+    }
   })
 }

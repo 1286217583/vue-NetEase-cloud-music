@@ -2,14 +2,13 @@
   <div class="contnt">
     <!-- find 发现页头部样式 | podcast 博客页头部样式 | myPage 我的页面头部样式 | karaoke K歌页面头部样式 | yuncun 云村页面头部样式 -->
     <HomeHeader :headerShow="headerStyle" class="header"/>
-    
+
     <div class="middle">
       <router-view  />
     </div>
     
     <footer class="footer">
-      <!-- 音乐播放器 -->
-      <aplayer :audio="audio" :lrcType="3" style="width: 100%;position: absolute; top: -90px; left: 0px;" />
+      <Play :play="play" :propsSongInformation="propsSongInformation"></Play>
 
       <div class="bottomNavigation">
         <div @click="showActive('find')">
@@ -48,21 +47,18 @@
         </div>
       </div>
     </footer>
+    
   </div>
 </template>
 
 <script>
-
+// import { getMusicUrl, getLyric } from '@/api/home'
+// 获取用户信息接口
+import { getUserInformation } from '@/api/login'
 // 引入头部组件
 import HomeHeader from '@/components/HomeHeader'
-// 引入 音乐播放组件
-import APlayer from '@moefe/vue-aplayer';
-import Vue from 'vue'
-
-Vue.use(APlayer, {
-  defaultCover: 'https://github.com/u3u.png',
-  productionTip: true,
-});
+// 音乐播放组件
+import Play from '../Play'
 
 export default {
   name: 'Home',
@@ -71,27 +67,53 @@ export default {
     return {
       // 控制头部样式 传props 及下方字体高亮 默认 find 
       headerStyle: 'find',
-      audio: {
-        name: '起风了',
-        artist: '买辣椒也用券',
-        url: 'http://m8.music.126.net/20210417014048/1b95ea677ef524b84308439f292dedad/ymusic/0758/550f/545f/028d3b9421be8425d60dc57735cf6ebc.mp3',
-        cover: 'https://p1.music.126.net/5zs7IvmLv7KahY3BFzUmrg==/109951163635241613.jpg?param=300y300', // prettier-ignore
-        lrc: 'https://cdn.moefe.org/music/lrc/thing.lrc',
-      },
+      // 判断跳转是否携带了参数，参数中是否携带了id
+      play: this.$route.query.id ? true : false,
     }
+  },
+
+  computed: {
+    // 获取地址中的参数传给Play组件
+    propsSongInformation() {
+      // 判断是否携带了参数,没有就不做操作
+      if (this.play) {
+        return this.$route.query
+      }
+      return {}
+    } 
   },
 
   components: {
     // 头部组件
     HomeHeader,
+    Play
   },
 
   methods: {
+    // 控制底部 高亮 fn
     showActive(value) {
-      console.log('s');
       this.headerStyle = value
+    },
+
+    // 获取用户信息
+    getUserInformation() {
+      // 判断 Cookies 是否存有用户信息
+      const cook = document.cookie
+      let index = cook.indexOf('NMTID=')
+
+      // 大于 -1 说明有登录
+      if (index > -1) {
+        getUserInformation().then(res => {
+          console.log(res);
+        })
+      }
+      
     }
-  }
+  },
+
+  created() {
+    this.getUserInformation()
+  },
   
 }
 </script>

@@ -10,7 +10,7 @@
           <img src="@/assets/icon/home-navigation-icon.png" alt="">
           <p>每日推荐</p>
         </section>
-        <section class="only">
+        <section class="only" @click="gofm">
           <img src="@/assets/icon/home-navigation-icon.png" alt="">
           <p>私人FM</p>
         </section>
@@ -70,6 +70,12 @@ export default {
     RecommendedSongList,
     PersonalTailor,
     MusicVideo
+  },
+
+  methods: {
+    gofm() {
+      this.$emit('showfmt')
+    }
   }
 }
 </script>

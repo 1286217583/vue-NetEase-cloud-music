@@ -7,13 +7,13 @@
 
     <!-- 首页是 发现 的头部样式 -->
     <div v-if="headerShow === 'find'">
-      <div class="header">
+      <router-link to="/searchPage" class="header">
         <!-- 搜索框 -->
         <div class="find-search">
           <img src="@/assets/icon/homeSearch-icon.png" alt="">
           <p>大家都在搜 姜云升</p>
         </div>
-      </div>
+      </router-link>
 
       <!-- 识别歌曲按钮 -->
       <div class="identifySongs">

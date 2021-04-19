@@ -7,7 +7,10 @@
         <div class="my-box">
           <div class="personal">
             <img :src="headPortrait" alt="">
-            <span> {{ userName }} ></span>
+            <span>
+              <a v-if="userName"> {{ userName }}</a>
+              <router-link to="/login" v-else> 登录 / 注册 ></router-link>
+            </span>
           </div>
           <img class="sweep" src="@/assets/icon/mune-sweep-icon.png">
         </div>
@@ -284,7 +287,6 @@ export default {
   props: {
     userName: {
       type: String,
-      default: '立即登录'
     },
     headPortrait: {
       type: String,
