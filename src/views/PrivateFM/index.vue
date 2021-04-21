@@ -12,9 +12,31 @@
       <!-- 歌词组件 -->
       <Lyric 
       :lyric="musicLyric"
+      :sEndS="sEndS"
+      :nowTime="currentTime"
+      :maxTime="duration"
       ></Lyric>
 
       <footer>
+        <div style="width: 100%;">
+          <span class="left">{{ moveTime }}</span>
+          
+          <!-- 歌曲进度条 -->
+          <van-slider 
+          class="slider"
+          style="margin:0px 50px;box-sizing: border-box;width: auto"
+          @change="onChange"
+          :button-size="20"
+          :disabled="false"
+          v-model="nowTmer"
+          :max="duration"
+          @input="goTime"
+          >
+          </van-slider>
+
+          <span class="right">{{ showTime }}</span>
+        </div>
+
         <img 
         src="@/assets/icon/music-play-icon.png" 
         alt="" 
@@ -32,12 +54,18 @@
 </template>
 
 <script>
+import Vue from 'vue'
 // 引入歌词组件
 import Lyric from './Lyric'
+// 滑块组件
+import { Slider } from 'vant'
+Vue.use(Slider);
+// 计时器
+// let sliderTimer = ''
 
 export default {
   name: 'PrivateFM',
-  
+
   data() {
     return {
       // 歌名
@@ -46,9 +74,18 @@ export default {
       singer: this.$props.Exhibition.artist,
       // 歌词
       lyric: [],
-      // 歌曲时间
+      // 歌词对应时间
       songTime: [],
-
+      // 控制歌词的滚动
+      lyricMove: this.sEndS,
+      // 歌曲总时间
+      showTime: '',
+      // 歌曲显示的播放时间
+      moveTime: '00:00',
+      // 传给歌词组件的进度
+      fTimer: 0,
+      // 当前歌曲进度条位置
+      nowTmer: 0
     }
   },
 
@@ -61,67 +98,147 @@ export default {
     // 父组件点击暂停或者播放  默认暂停
     sEndS: {
       type: Boolean,
-      default: false
     },
 
+    // 歌词
     musicLyric: {
       type: String,
       required: true
+    },
+
+    // 播放进度时间 毫秒
+    currentTime: {
+      type: Number,
+      required: true
+    },
+
+    // 时间 单位秒
+    duration: {
+      type: Number,
+      required: true
     }
+  },
+
+  watch: {
+    duration(newVal) {
+      this.propsTime(newVal)
+    },
+
+    // sEndS() {
+    //   this.sliderMove()
+    // },
+    
+    currentTime(newVla, oldVal) {
+      newVla = Math.ceil(newVla)
+      oldVal = Math.ceil(oldVal)
+      if ( newVla !== oldVal ) {
+        this.goTime(newVla)
+      }
+      this.nowTmer = newVla
+    }
+    
   },
 
   components: {
     Lyric
   },
+
   methods: {
-    // 获取歌词数据
-    // getLyricData() {
-    //   // 发送请求
-    //   getLyric(this.ID).then(res => {
-    //     console.log(res);
-    //     // 判断数据中是否有歌词
-    //     if (res.lrc) {
-    //       // 有歌词就进行 下一步操作
-    //       this.getLyric(res.lrc.lyric)
-    //     } else {
-    //       this.lyric = ['暂无歌词']
-    //     }
-    //   }) 
-    // },
-
-    // // 取出歌词数据里面的歌词
-    // getLyric(lyricData) {
-    //   // 对数据返回的歌词 在换行符进行分割成数组
-    //   const data = lyricData.split('\n')
-    //   const dataMap = new Map()
-
-    //   // 对分割好的歌词进行遍历
-    //   data.forEach(item => {
-    //     // 将里面的时间和歌词再进行分割
-    //     const strArr = item.split(']')
-    //     // 判断是否存在歌词，有则将他做成map数据 时间为key 歌词为 value
-    //     strArr.length > 1 && dataMap.set(`${strArr[0]}]`, strArr[1])
-    //   })
-    //   // console.log(dataMap);
-    // }
-
     // 对暂停或者播放按钮的点击 和通知 父组件
     FMshow() {
       this.$emit('playendstop', !this.$props.sEndS)
+      this.lyricMove = !this.lyricMove
     },
+
     // 对自身的隐藏
     showfm () {
       this.$emit('showfm')
-    }
+    },
+
+    // 拖动进度条滑块的处理 fn
+    onChange(value) {
+      // 执行 goTime fn
+      this.goTime(value)
+      this.$emit('audiocurrent', value)
+    },
+    
+    // 处理props的时间
+    propsTime(time) {
+      let ss = time % 60
+      if (ss.toString().length !== 2) {
+        ss = `0${ss}`
+      }
+      
+      let mm = (time - ss) / 60
+      if (mm.toString().length !== 2) {
+        mm = `0${mm}`
+      }
+
+      this.showTime = `${mm}:${ss}`
+    },
+
+    // 对播放时间进行处理
+    goTime(value) {
+      clearInterval(this.oneTimer)
+      // 判断 value 是否小于10
+      if (value < 10) {
+        // 小于直接赋值 然后 return
+        this.moveTime = `00:0${value}`
+        return
+      }
+
+      // 判断 value是否大于 60  大于60再进行判断和计算处理 否则直接赋值
+      if (value >= 60) {
+        // 对 value 进行取余 获取到秒数
+        let ss = value % 60
+
+        // 对 取余的数进行判断是否为单数 单数加 0 
+        if (ss.toString().length !== 2) {
+          ss = `0${ss}`
+        }
+
+        // 对 value 减去秒数 再除 60 得 分数
+        let mm = (value - ss) / 60
+
+        // 判断得除的分数 是否为单数 单数加 0
+        if (mm.toString().length !== 2) {
+          mm = `0${mm}`
+        }
+
+        // 最后赋值 给 moveTime 数据
+        this.moveTime = `${mm}:${ss}`
+
+      } else {
+        // 为 false 说明大于 10 小于 60 直接赋值
+        this.moveTime = `00:${value}`
+      }
+
+      this.oneTimer = setTimeout(() => {
+        this.fTimer = this.nowTmer
+      },500)
+    },
+
+    // 播放时的进度条移动
+    // sliderMove() {
+    //   if (this.sEndS) {
+
+    //     sliderTimer = setInterval(() => {
+    //       this.nowTmer ++
+    //       this.goTime(this.nowTmer)
+    //       if (this.nowTmer >= this.duration) {
+    //         clearInterval(sliderTimer)
+    //         this.nowTmer = 0
+    //       }
+    //     },1000)
+
+    //   } else {
+    //     clearInterval(sliderTimer)
+    //   }
+    // }
   },
 
-  created () {
-    // this.getLyricData()
-
-    // // 获取歌曲 url
-    // getMusicUrl(this.ID).then(res => {
-    //   console.log(res);
-    // })
+  mounted() {
+    // this.sliderMove()
   }
 }
 </script>
@@ -166,13 +283,26 @@ export default {
     width: 335px;
     height: 60px;
     display: flex;
+    flex-direction: column;
     justify-content: center;
     align-items: center;
+    .left {
+      float: left;
+    }
+    .right {
+      float: right;
+    }
+    span {
+      font-size: 14px;
+      color: #fff;
+    }
     img {
       width: 40px;
       height: 40px;
+      margin-top: 10px;
     }
   }
 }
+
 
 </style>

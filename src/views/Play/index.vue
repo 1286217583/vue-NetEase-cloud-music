@@ -7,8 +7,10 @@
       :music="config"
       :showLrc="true"
       ref="audio"
+      :autoplay="play"
       @pause="startEndStop"
       @play="startEndStop"
+      :controls="true"
       >
       </Aplayer>
     </div>
@@ -20,6 +22,9 @@
     :Exhibition="songInformation"
     :sEndS='sEndS'
     :musicLyric="musicLyric"
+    :duration="duration"
+    @audiocurrent='audiocurrent'
+    :currentTime="currentTimer"
     />
   </div>
 </template>
@@ -32,14 +37,15 @@ import Aplayer from 'vue-aplayer'
 Aplayer.disableVersionBadge = true
 // PrivateFM 组件
 import PrivateFM from "../PrivateFM"
-
+// audio 元素
+let audio = ''
 export default {
   name: 'play',
 
   data () {
     return {
-      show: false,
-      // show: true,
+      // show: false,
+      show: true,
       // 歌曲信息
       songInformation: {},
       // 歌曲详情 播放或暂停
@@ -48,7 +54,13 @@ export default {
       goAudio: false,
 
       // 歌词
-      musicLyric: ''
+      musicLyric: '',
+
+      // 歌曲总时长时间 秒为单位
+      duration: 0,
+
+      // 歌曲播放的进度 毫秒为单位
+      currentTimer: 0
     }
   },
 
@@ -87,16 +99,18 @@ export default {
   },
 
   methods: {
-    playEstop () {
-      const audio = this.$refs.audio.$refs.audio
-      if (this.play) {
-        audio.play()
-      }
-    },
     // 展示 歌曲嫌弃 fn
     go(ev) {
       const className = ev.target.className
-      if (className === 'aplayer-music' || className === 'aplayer-lrc-current' ) {
+      const n1 = 'aplayer-music'
+      const n2 = 'aplayer-lrc-current'
+      const n3 = 'aplayer-lrc-contents'
+      const n4 = 'aplayer-author'
+      const n5 = 'aplayer-title'
+
+      // 判断点击的 className 是否 等于 上面的 className
+      if (className === n1 || className === n2 || className === n3 || className === n4 || className === n5 ) {
+        // true 就显示
         this.show = true
       }
     },
@@ -137,14 +151,30 @@ export default {
           artist: '买辣椒也要券',
         }
         // 赋值给 config
-        this.config.src = 'http://m7.music.126.net/20210419114713/97c4a617d681d6acfc40aac1c43f876c/ymusic/0758/550f/545f/028d3b9421be8425d60dc57735cf6ebc.mp3',
+        this.config.src = 'http://m7.music.126.net/20210420234839/97b38f24f3655890c60c1ff85c70d141/ymusic/0758/550f/545f/028d3b9421be8425d60dc57735cf6ebc.mp3',
         this.config.lrc = '[00:00.00]lrc here\n[00:01.00]aplayer'
 
-        this.musicLyric = 'Hello World'
+        this.musicLyric = '暂无歌词'
 
         // 显示 播放器
         this.goAudio = true
+        setTimeout(() => {
+          audio = this.$refs.audio.$refs.audio
+          this.duration = parseInt(audio.duration)
+          
+          audio.ontimeupdate = () => {this.currentTimer = audio.currentTime}
+        },300)
       }
+    },
+    // 子组件滑动进度条的 fn
+    audiocurrent(value) {
+      // 拿到audio元素，将value 赋值给它的 currentTime  
+      this.$refs.audio.$refs.audio.currentTime = value
+    },
+
+    // 当audio元素的播放时间发生变化执行的函数
+    timeChange() {
+      console.log('ssss');
     },
 
   // 1486901878
@@ -160,21 +190,25 @@ export default {
         this.musicLyric = lyric
       })
     },
-    
+
     // 请求歌曲播放地址
     async getMusicUrl(id) {
-      await getMusicUrl(id).then(res => {
+       await getMusicUrl(id).then(res => {
+         
         // 拿到歌曲url 赋值 给 config.src
         this.config.src = res.data[0].url
         // 让播放器显示
         this.goAudio = true
       })
-      // play是true则会组件播放
-      if (this.play) {
-        this.$refs.audio.$refs.audio.play()
-        this.sEndS = true
-      }
-    }
+
+      setTimeout(() => {
+        audio = this.$refs.audio.$refs.audio
+        this.duration = parseInt(audio.duration)
+        
+        audio.ontimeupdate = () => {this.currentTimer = audio.currentTime}
+      },300)
+      
+    },
   },
 
   created () {
@@ -183,16 +217,6 @@ export default {
   },
 }
 </script>
-// const data = lyricData.split('\n')
-      // const dataMap = new Map()
-      console.log(res);
-      this.lyric = res.lrc.lyric
-      // data.forEach(item => {
-      //   const strArr = item.split(']')
-      //   strArr.length > 1 && dataMap.set(`${strArr[0]}]`, strArr[1])
-      // })
-
-      // console.log(dataMap);
 
 <style lang='scss' scoped>
 .Aplayer {
